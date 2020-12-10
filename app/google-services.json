@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "895371307143",
+    "firebase_url": "https://covitiet.firebaseio.com",
+    "project_id": "covitiet",
+    "storage_bucket": "covitiet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895371307143:android:b56c74219ef4087aa2f022",
+        "android_client_info": {
+          "package_name": "com.tewari.covitiet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "895371307143-nn8di53tgf7omkosovmkuruqhjnbuln2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJmtzaei-TbAsa5keMrHKGPrFG7zYk70A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "895371307143-nn8di53tgf7omkosovmkuruqhjnbuln2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
