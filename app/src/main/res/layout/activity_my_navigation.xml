@@ -17,11 +17,11 @@
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
 
+
     <include
         layout="@layout/app_bar_my_navigation"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
