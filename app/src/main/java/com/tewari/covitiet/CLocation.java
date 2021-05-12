@@ -7,6 +7,10 @@ public class CLocation extends Location {
 
     public CLocation(Location location) {
         super(location);
+<<<<<<< HEAD
+=======
+    //Added a random comment in CLocation class
+>>>>>>> b2914adfa03c1bd397fb0a37d82e77ff9d580f58
     }
 
     @Override
