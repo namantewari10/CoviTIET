@@ -388,7 +388,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
                             str.add(name);
                         }
                 }
-                Log.i("STATUS:", "There are currently "+ str.size() +" people moving with the user(less than 1m apart) with speed greater than 2 ft/sec");
+//                Log.i("STATUS:", "There are currently "+ str.size() +" people moving with the user(less than 1m apart) with speed greater than 2 ft/sec");
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {

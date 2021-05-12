@@ -56,7 +56,7 @@ public class RegisterSuccessActivity extends AppCompatActivity {
                         if(task.isSuccessful())
                         {
                             // insert values in realtime database
-                            CreateUser createUser=new CreateUser(name, email, password, date, "false", "na", "na", "0.0");
+                            CreateUser createUser=new CreateUser(name, email, password, date, "false", "na", "na");
 
                             user=auth.getCurrentUser();
                             userId=user.getUid();
