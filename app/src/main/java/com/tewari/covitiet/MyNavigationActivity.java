@@ -118,7 +118,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
             //request permi
             ActivityCompat.requestPermissions(MyNavigationActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
         }
-        this.updateSpeed(null);
+//        this.updateSpeed(null);
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -176,7 +176,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
             }
         });
 
-        getLocations();
+//        getLocations();
     }
 
     @Override
@@ -290,8 +290,8 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
 //            String currCoor = "Latitude: " + Double.toString(lat) + "\n" + "Longitude: " + Double.toString(lng);
             databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(lat));
             databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(lng));
-            CLocation myLocation = new CLocation(location);
-            this.updateSpeed(myLocation);
+//            CLocation myLocation = new CLocation(location);
+//            this.updateSpeed(myLocation);
 
         }
     }
@@ -327,74 +327,74 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
         Toast.makeText(this,"Waiting GPS Connection!", Toast.LENGTH_SHORT).show();
     }
 
-    private void updateSpeed(CLocation location) {
-        float nCurrentSpeed = 0;
-        if (location != null) {
-            nCurrentSpeed = location.getSpeed();
-        }
-        Formatter fmt = new Formatter(new StringBuilder());
-        fmt.format(Locale.US, "%5.6f", nCurrentSpeed);
-        String strCurrentSpeed = fmt.toString();
-        databaseReference.child(user.getUid()).child("speed").setValue(strCurrentSpeed);
-    }
+//    private void updateSpeed(CLocation location) {
+//        float nCurrentSpeed = 0;
+//        if (location != null) {
+//            nCurrentSpeed = location.getSpeed();
+//        }
+//        Formatter fmt = new Formatter(new StringBuilder());
+//        fmt.format(Locale.US, "%5.6f", nCurrentSpeed);
+//        String strCurrentSpeed = fmt.toString();
+//        databaseReference.child(user.getUid()).child("speed").setValue(strCurrentSpeed);
+//    }
 
-    public void getLocations() {
-        final ArrayList<String> str = new ArrayList<String>();
-        String names = "";
-        final String userEmail = user.getEmail();
-        final String[] userSpeed = {""};
-        final String[] userLat = {""};
-        final String[] userLng = {""};
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userSpeed[0] =snapshot.child(user.getUid()).child("speed").getValue(String.class);
-                userLat[0] =snapshot.child(user.getUid()).child("lat").getValue(String.class);
-                userLng[0] =snapshot.child(user.getUid()).child("lng").getValue(String.class);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-        ValueEventListener eventListener = new ValueEventListener() {
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    String email = ds.child("email").getValue(String.class);
-                    if (!email.equals(userEmail)) {
-                        String name = ds.child("name").getValue(String.class);
-                        String speed = ds.child("speed").getValue(String.class);
-                        String lat = ds.child("lat").getValue(String.class);
-                        String lng = ds.child("lng").getValue(String.class);
-                        Location locationOfOther = new Location("PointB");
-                        locationOfOther.setLatitude(Double.parseDouble(lat));
-                        locationOfOther.setLongitude(Double.parseDouble(lng));
-
-                        String uLat=userLat[0];
-                        String uLng=userLng[0];
-                        Location locationOfUser=new Location("Point A");
-                        locationOfUser.setLatitude(Double.parseDouble(uLat));
-                        locationOfUser.setLongitude(Double.parseDouble(uLng));
-
-                        double otherUserSpeed=Double.parseDouble(speed);
-                        double userSpeedDouble=Double.parseDouble(userSpeed[0]);
-                        float dis=locationOfUser.distanceTo(locationOfOther);
-
-                        if(dis<1 && otherUserSpeed>2 && userSpeedDouble>2)
-                            str.add(name);
-                        }
-                }
-                Log.i("STATUS:", "There are currently "+ str.size() +" people moving with the user(less than 1m apart) with speed greater than 2 ft/sec");
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.i("Error", "DB Error");
-            }
-        };
-        databaseReference.addListenerForSingleValueEvent(eventListener);
-    }
+//    public void getLocations() {
+//        final ArrayList<String> str = new ArrayList<String>();
+//        String names = "";
+//        final String userEmail = user.getEmail();
+//        final String[] userSpeed = {""};
+//        final String[] userLat = {""};
+//        final String[] userLng = {""};
+//        databaseReference.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                userSpeed[0] =snapshot.child(user.getUid()).child("speed").getValue(String.class);
+//                userLat[0] =snapshot.child(user.getUid()).child("lat").getValue(String.class);
+//                userLng[0] =snapshot.child(user.getUid()).child("lng").getValue(String.class);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
+//
+//        ValueEventListener eventListener = new ValueEventListener() {
+//
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                for (DataSnapshot ds : snapshot.getChildren()) {
+//                    String email = ds.child("email").getValue(String.class);
+//                    if (!email.equals(userEmail)) {
+//                        String name = ds.child("name").getValue(String.class);
+//                        String speed = ds.child("speed").getValue(String.class);
+//                        String lat = ds.child("lat").getValue(String.class);
+//                        String lng = ds.child("lng").getValue(String.class);
+//                        Location locationOfOther = new Location("PointB");
+//                        locationOfOther.setLatitude(Double.parseDouble(lat));
+//                        locationOfOther.setLongitude(Double.parseDouble(lng));
+//
+//                        String uLat=userLat[0];
+//                        String uLng=userLng[0];
+//                        Location locationOfUser=new Location("Point A");
+//                        locationOfUser.setLatitude(Double.parseDouble(uLat));
+//                        locationOfUser.setLongitude(Double.parseDouble(uLng));
+//
+//                        double otherUserSpeed=Double.parseDouble(speed);
+//                        double userSpeedDouble=Double.parseDouble(userSpeed[0]);
+//                        float dis=locationOfUser.distanceTo(locationOfOther);
+//
+//                        if(dis<1 && otherUserSpeed>2 && userSpeedDouble>2)
+//                            str.add(name);
+//                        }
+//                }
+//                Log.i("STATUS:", "There are currently "+ str.size() +" people moving with the user(less than 1m apart) with speed greater than 2 ft/sec");
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.i("Error", "DB Error");
+//            }
+//        };
+//        databaseReference.addListenerForSingleValueEvent(eventListener);
+//    }
 }
