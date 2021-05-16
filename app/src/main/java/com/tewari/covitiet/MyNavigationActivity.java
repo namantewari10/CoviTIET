@@ -45,6 +45,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.karan.churi.PermissionManager.PermissionManager;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.sdsmdg.tastytoast.TastyToast;
 import com.tewari.covitiet.ui.gallery.GalleryFragment;
 import com.tewari.covitiet.ui.home.HomeFragment;
 import com.tewari.covitiet.ui.slideshow.SlideshowFragment;
@@ -261,11 +262,14 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
 
                     int i = Integer.parseInt(snapshot.child(query).child("count").getValue(String.class));
                     if (i < 20)
-                        Toast.makeText(MyNavigationActivity.this, "Safe to visit :) \n Number of people: " + Integer.toString(i), Toast.LENGTH_LONG).show();
+                        TastyToast.makeText(getApplicationContext(), "Safe to visit ", TastyToast.LENGTH_LONG, TastyToast.SUCCESS);
+//                        Toast.makeText(MyNavigationActivity.this, "Safe to visit :) \n Number of people: " + Integer.toString(i), Toast.LENGTH_LONG).show();
                     else
-                        Toast.makeText(MyNavigationActivity.this, "Not safe to visit at the moment! \n Number of people: " + Integer.toString(i), Toast.LENGTH_LONG).show();
+                        TastyToast.makeText(getApplicationContext(), "Not safe to visit at the moment! ", TastyToast.LENGTH_LONG, TastyToast.WARNING);
+//                        Toast.makeText(MyNavigationActivity.this, "Not safe to visit at the moment! \n Number of people: " + Integer.toString(i), Toast.LENGTH_LONG).show();
                 } else
-                    Toast.makeText(MyNavigationActivity.this, "Enter a valid location!", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(MyNavigationActivity.this, "Enter a valid location!", Toast.LENGTH_LONG).show();
+                    TastyToast.makeText(getApplicationContext(), "Enter a valid location!", TastyToast.LENGTH_LONG, TastyToast.ERROR);
             }
 
             @Override
