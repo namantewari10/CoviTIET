@@ -106,7 +106,9 @@ public class MyNavigationActivity extends AppCompatActivity {
             for(Location location:locationResult.getLocations()){
 //                textView.setText(location.getLatitude()+" "+location.getLongitude());
 //                Log.i("Location Updates:", location.toString());
-                Toast.makeText(MyNavigationActivity.this, location.getLatitude()+" "+location.getLongitude(), Toast.LENGTH_SHORT).show();
+                databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(location.getLatitude()));
+                databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(location.getLongitude()));
+//                Toast.makeText(MyNavigationActivity.this, location.getLatitude()+" "+location.getLongitude(), Toast.LENGTH_SHORT).show();
             }
         }
     };
