@@ -63,13 +63,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.Locale;
-
-import static com.tewari.covitiet.R.id.nav_about;
-import static com.tewari.covitiet.R.id.snap;
-import static com.tewari.covitiet.R.id.start;
 
 public class MyNavigationActivity extends AppCompatActivity implements LocationListener {
 
@@ -289,6 +282,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
     @Override
     public void onLocationChanged(final Location location) {
         if (location != null) {
+//            mapFragment.getMapAsync();
             double lat = location.getLatitude();
             double lng = location.getLongitude();
 //            String currCoor = "Latitude: " + Double.toString(lat) + "\n" + "Longitude: " + Double.toString(lng);
@@ -321,7 +315,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
             if (ActivityCompat.checkSelfPermission(MyNavigationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 //when permi granted
                 //call method
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
             } else {
                 //when permi denied
                 //request permi
