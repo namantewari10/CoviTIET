@@ -4,11 +4,15 @@ import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,14 +26,23 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -53,6 +66,7 @@ import com.tewari.covitiet.ui.slideshow.SlideshowFragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
@@ -62,29 +76,46 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
-
-public class MyNavigationActivity extends AppCompatActivity implements LocationListener {
-
+public class MyNavigationActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     DrawerLayout drawer;
     FirebaseAuth auth;
     FirebaseUser user;
     FirebaseUser allUsers;
     GoogleMap mMap;
-    FusedLocationProviderClient client;
+    private FusedLocationProviderClient fusedLocationClient;
     SupportMapFragment mapFragment;
     TextView nameTextView;
     String currentUserName, currentUserEmail;
     DatabaseReference databaseReference;
     DatabaseReference dbRef;
     NavigationView navigationView;
+    LocationRequest locationRequest;
 
+    LocationCallback locationCallback=new LocationCallback() {
+        @Override
+        public void onLocationResult(@NonNull LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            if(locationResult==null){
+                return;
+            }
+            for(Location location:locationResult.getLocations()){
+//                textView.setText(location.getLatitude()+" "+location.getLongitude());
+//                Log.i("Location Updates:", location.toString());
+                Toast.makeText(MyNavigationActivity.this, location.getLatitude()+" "+location.getLongitude(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_navigation);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -93,30 +124,20 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users");
         dbRef = FirebaseDatabase.getInstance().getReference().child("New");
 
-
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-
         //Initialize fused Location
-        client = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        //Check permission
-        if (ActivityCompat.checkSelfPermission(MyNavigationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            //when permi granted
-            //call method
-            getCurrentLocation();
-            doStuff();
-        } else {
-            //when permi denied
-            //request permi
-            ActivityCompat.requestPermissions(MyNavigationActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
-        }
-//        this.updateSpeed(null);
+        locationRequest=locationRequest.create();
+        locationRequest.setInterval(4000);
+        locationRequest.setFastestInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_about, R.id.nav_signout)
                 .setDrawerLayout(drawer)
@@ -170,27 +191,91 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
             }
         });
 
-//        getLocations();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 44) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getCurrentLocation();
+    protected void onStart() {
+        super.onStart();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            getLastLocation();
+            checkSettingsAndStartLocationUpdates();
+        } else {
+            askLocationPermission();
+        }
+        getLastLocation();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdates();
+    }
+
+    private void checkSettingsAndStartLocationUpdates(){
+        LocationSettingsRequest request=new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build();
+        SettingsClient client=LocationServices.getSettingsClient(this);
+
+        Task<LocationSettingsResponse> locationSettingsResponseTask=client.checkLocationSettings(request);
+        locationSettingsResponseTask.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                //settings of device are satisfied and we can start location updates
+                startLocationUpdates();
+            }
+        });
+        locationSettingsResponseTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if(e instanceof ResolvableApiException){
+                    ResolvableApiException apiException=(ResolvableApiException) e;
+                    try {
+                        apiException.startResolutionForResult(MyNavigationActivity.this, 1001);
+                    } catch (IntentSender.SendIntentException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void startLocationUpdates(){
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+    private void stopLocationUpdates(){
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
+    private void askLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+//                Log.d(TAG, "askLocationPermission: you should show an alert dialog...");
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 44);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 44);
             }
         }
     }
 
-    private void getCurrentLocation() {
-        //Initialize task location
-        Task<Location> task = client.getLastLocation();
-        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 44) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+//                getLastLocation();
+                checkSettingsAndStartLocationUpdates();
+            } else {
+                //Permission not granted
+            }
+        }
+    }
+
+    private void getLastLocation() {
+        fusedLocationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
-            public void onSuccess(final Location location) {
-                //when success
-                if (location != null)
-                    //sync map
+            public void onComplete(@NonNull Task<Location> task) {
+                final Location location=task.getResult();
+                if(location!=null){
                     mapFragment.getMapAsync(new OnMapReadyCallback() {
                         @Override
                         public void onMapReady(GoogleMap googleMap) {
@@ -201,9 +286,6 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
                             double lng = location.getLongitude();
                             lng=(double) Math.round(lng * 100) / 100;
                             String currCoor = "Latitude: " + Double.toString(lat) + " " + "Longitude: " + Double.toString(lng);
-//                            databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(lat));
-//                            databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(lng));
-//                            Toast.makeText(MyNavigationActivity.this, currCoor, Toast.LENGTH_LONG).show();
                             //Create marker options
                             MarkerOptions options = new MarkerOptions().position(latLng).title(currCoor);
                             //Zoom map
@@ -212,6 +294,7 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
                             googleMap.addMarker(options);
                         }
                     });
+                }
             }
         });
     }
@@ -279,51 +362,22 @@ public class MyNavigationActivity extends AppCompatActivity implements LocationL
                 || super.onSupportNavigateUp();
     }
 
-    @Override
-    public void onLocationChanged(final Location location) {
-        if (location != null) {
-//            mapFragment.getMapAsync();
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
-//            String currCoor = "Latitude: " + Double.toString(lat) + "\n" + "Longitude: " + Double.toString(lng);
-            databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(lat));
-            databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(lng));
-//            CLocation myLocation = new CLocation(location);
-//            this.updateSpeed(myLocation);
 
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    private void doStuff() {
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager != null) {
-            if (ActivityCompat.checkSelfPermission(MyNavigationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                //when permi granted
-                //call method
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
-            } else {
-                //when permi denied
-                //request permi
-                ActivityCompat.requestPermissions(MyNavigationActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
-            }
-        }
-        Toast.makeText(this,"Waiting GPS Connection!", Toast.LENGTH_SHORT).show();
-    }
+//    private void doStuff() {
+//        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+//        if (locationManager != null) {
+//            if (ActivityCompat.checkSelfPermission(MyNavigationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                //when permi granted
+//                //call method
+//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, this);
+//            } else {
+//                //when permi denied
+//                //request permi
+//                ActivityCompat.requestPermissions(MyNavigationActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
+//            }
+//        }
+//        Toast.makeText(this,"Waiting GPS Connection!", Toast.LENGTH_SHORT).show();
+//    }
 
 //    private void updateSpeed(CLocation location) {
 //        float nCurrentSpeed = 0;
