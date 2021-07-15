@@ -222,12 +222,11 @@ public class MyNavigationActivity extends AppCompatActivity {
 
 
     public void createArrayList(ArrayList<Location> locationArrayList){
-        Location newLocation=new Location("");
         //atheletic field
+        Location newLocation=new Location("");
         newLocation.setLatitude(30.35455228280765);
         newLocation.setLongitude(76.36118745873037);
         locationArrayList.add(newLocation);
-
         //basketball court
         Location newLocation1=new Location("");
         newLocation1.setLatitude(30.355457108316532);
@@ -238,6 +237,36 @@ public class MyNavigationActivity extends AppCompatActivity {
         newLocation2.setLatitude(30.3525667683561);
         newLocation2.setLongitude(76.37127999304425);
         locationArrayList.add(newLocation2);
+        //main gate parking
+        Location newLocation3=new Location("");
+        newLocation3.setLatitude(30.352707846081373);
+        newLocation3.setLongitude(76.3724809904957);
+        locationArrayList.add(newLocation3);
+        //NNCL
+        Location newLocation4=new Location("");
+        newLocation4.setLatitude(30.35455228280765);
+        newLocation4.setLongitude(76.36964178198384);
+        locationArrayList.add(newLocation4);
+        //Nirvana
+        Location newLocation5=new Location("");
+        newLocation5.setLatitude(30.35285557979961);
+        newLocation5.setLongitude(76.36686951233656);
+        locationArrayList.add(newLocation5);
+        //PizzaNation
+        Location newLocation6=new Location("");
+        newLocation6.setLatitude(30.35453376666363);
+        newLocation6.setLongitude(76.36233544424829);
+        locationArrayList.add(newLocation6);
+        //SBI
+        Location newLocation7=new Location("");
+        newLocation7.setLatitude(30.35276545876215);
+        newLocation7.setLongitude(76.37058591960606);
+        locationArrayList.add(newLocation7);
+        //SBOPLawn
+        Location newLocation8=new Location("");
+        newLocation8.setLatitude(30.352034055051455);
+        newLocation8.setLongitude(76.36983490104294);
+        locationArrayList.add(newLocation8);
     }
 
     public CheckPointPair getNearestLocation(Location location){
