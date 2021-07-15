@@ -109,10 +109,10 @@ public class MyNavigationActivity extends AppCompatActivity {
             for(final Location location:locationResult.getLocations()){
                 databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(location.getLatitude()));
                 databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(location.getLongitude()));
-                CheckPointPair obj=new CheckPointPair("",0);
-                CheckPointPair p=getNearestLocation(location);
+//                CheckPointPair obj=new CheckPointPair("",0);
+//                CheckPointPair p=getNearestLocation(location);
 //                increaseCounterValue(p.name);
-                Toast.makeText(MyNavigationActivity.this, p.name+" "+p.dist, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MyNavigationActivity.this, p.name+" "+p.dist, Toast.LENGTH_SHORT).show();
             }
         }
     };
