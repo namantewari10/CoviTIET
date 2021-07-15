@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -77,6 +78,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -95,6 +97,7 @@ public class MyNavigationActivity extends AppCompatActivity {
     DatabaseReference dbRef;
     NavigationView navigationView;
     LocationRequest locationRequest;
+    ArrayList<Location> locationArrayList;
 
     LocationCallback locationCallback=new LocationCallback() {
         @Override
@@ -103,12 +106,13 @@ public class MyNavigationActivity extends AppCompatActivity {
             if(locationResult==null){
                 return;
             }
-            for(Location location:locationResult.getLocations()){
-//                textView.setText(location.getLatitude()+" "+location.getLongitude());
-//                Log.i("Location Updates:", location.toString());
+            for(final Location location:locationResult.getLocations()){
                 databaseReference.child(user.getUid()).child("lat").setValue(Double.toString(location.getLatitude()));
                 databaseReference.child(user.getUid()).child("lng").setValue(Double.toString(location.getLongitude()));
-//                Toast.makeText(MyNavigationActivity.this, location.getLatitude()+" "+location.getLongitude(), Toast.LENGTH_SHORT).show();
+//                CheckPointPair obj=new CheckPointPair("",0);
+//                CheckPointPair p=getNearestLocation(location);
+//                increaseCounterValue(p.name);
+//                Toast.makeText(MyNavigationActivity.this, p.name+" "+p.dist, Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -133,9 +137,12 @@ public class MyNavigationActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         locationRequest=locationRequest.create();
-        locationRequest.setInterval(4000);
+        locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        locationArrayList=new ArrayList<>();
+        createArrayList(locationArrayList);
 
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -213,6 +220,63 @@ public class MyNavigationActivity extends AppCompatActivity {
         stopLocationUpdates();
     }
 
+
+    public void createArrayList(ArrayList<Location> locationArrayList){
+        Location newLocation=new Location("");
+        //atheletic field
+        newLocation.setLatitude(30.35455228280765);
+        newLocation.setLongitude(76.36118745873037);
+        locationArrayList.add(newLocation);
+
+        //basketball court
+        Location newLocation1=new Location("");
+        newLocation1.setLatitude(30.355457108316532);
+        newLocation1.setLongitude(76.36589318820451);
+        locationArrayList.add(newLocation1);
+        //jaggi
+        Location newLocation2=new Location("");
+        newLocation2.setLatitude(30.3525667683561);
+        newLocation2.setLongitude(76.37127999304425);
+        locationArrayList.add(newLocation2);
+    }
+
+    public CheckPointPair getNearestLocation(Location location){
+        float minDist=Float.MAX_VALUE;
+        String minLoc="";
+        int place=-1;
+        String ppp="";
+        for(int i=0;i<locationArrayList.size();i++){
+            if(location.distanceTo(locationArrayList.get(i))<minDist){
+                minDist=location.distanceTo(locationArrayList.get(i));
+                place=i;
+            }
+            ppp+=location.distanceTo(locationArrayList.get(i))+"  ";
+        }
+//        Log.d("All Distances", ppp);
+        switch (place){
+            case 0:
+                minLoc="AthleticField";
+                break;
+            case 1:
+                minLoc="BasketballCourt";
+                break;
+            case 2:
+                minLoc="Jaggi";
+                break;
+        }
+        return new CheckPointPair(minLoc, minDist);
+    }
+
+    public void increaseCounterValue(final String place){
+//        final String[] incCount = {""};
+////        final String[] userSpeed = {""};
+//        DatabaseReference dbLoc=dbRef.child(place);
+////                int pp=Integer.parseInt(incCount[0]);
+//                int pp=54;
+//                pp+=1;
+////                Log.d("COUNT VALUE:", String.valueOf(pp));
+//                dbLoc.child("count").setValue(String.valueOf(pp));
+    }
     private void checkSettingsAndStartLocationUpdates(){
         LocationSettingsRequest request=new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build();
         SettingsClient client=LocationServices.getSettingsClient(this);
